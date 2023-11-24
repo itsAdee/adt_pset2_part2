@@ -6,6 +6,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import graph.Graph;
@@ -57,12 +59,19 @@ public class GraphPoet {
 
     private final Graph<String> graph = new ConcreteVerticesGraph();
 
-    // Abstraction function:
-    //   TODO
-    // Representation invariant:
-    //   TODO
-    // Safety from rep exposure:
-    //   TODO
+	 // Abstraction function:
+	 // Represents a GraphPoet that generates poems based on word affinity graphs derived from a corpus.
+	 // The graph contains vertices representing words and edges representing adjacency counts.
+	 // The poem generation attempts to insert bridge words between adjacent input words.
+	 // If there are no valid bridge words, no insertion occurs.
+	
+	 // Representation invariant:
+	 // - The graph should contain vertices representing case-insensitive words as non-empty strings of non-space non-newline characters.
+	 // - Edges in the graph represent the adjacency count between words in the corpus.
+	
+	 // Safety from rep exposure:
+	 // - The graph instance is private and only accessed through appropriate methods in the GraphPoet class.
+	
 
     /**
      * Create a new poet with the graph from corpus (as described above).
@@ -71,9 +80,7 @@ public class GraphPoet {
      * @throws IOException if the corpus file cannot be found or read
      */
     public GraphPoet(File corpus) throws IOException {
-    	System.out.println("Inside Constructor!");
     	readCorpus(corpus);
-    	System.out.println("Leaving Constructor!");
     }
     
     /**
@@ -83,7 +90,6 @@ public class GraphPoet {
      * @throws IOException if the corpus file cannot be found or read
      */
     private void readCorpus(File corpus) throws IOException {
-    	System.out.println("Entered Corpus");
         try (BufferedReader reader = new BufferedReader(new FileReader(corpus))) {
             String line;
             String prevWord = null;
@@ -108,10 +114,28 @@ public class GraphPoet {
                 }
             }
         }
-        System.out.println("Leaving Corpus");
     }
 
-    // TODO checkRep
+    /**
+     * Verifies that the representation invariant holds true for the current state of the GraphPoet.
+     * @throws AssertionError if the representation invariant is violated.
+     */
+    private void checkRep() {
+        Set<String> vertices = graph.vertices();
+        for (String vertex : vertices) {
+            // Validate that each vertex is a non-empty string of non-space non-newline characters
+            assert vertex != null && !vertex.trim().isEmpty() && !vertex.contains(" ") && !vertex.contains("\n") :
+                    "Invalid vertex representation: " + vertex;
+        }
+        // Check for the adjacency count between words in the corpus
+        for (String source : vertices) {
+            Map<String, Integer> edges = graph.targets(source);
+            for (String target : edges.keySet()) {
+                int weight = edges.get(target);
+                assert weight >= 0 : "Negative weight between " + source + " and " + target;
+            }
+        }
+    }
 
     /**
      * Generate a poem.
@@ -163,5 +187,16 @@ public class GraphPoet {
 
         bridgeWords.sort((b1, b2) -> graph.targets(source).get(b2) - graph.targets(source).get(b1));
         return bridgeWords;
+    }
+    
+    /**
+     * Provides a string representation of the current state of the GraphPoet.
+     * @return a string representing the GraphPoet.
+     */
+    @Override
+    public String toString() {
+        int vertexCount = graph.vertices().size();
+        int edgeCount = graph.vertices().stream().mapToInt(vertex -> graph.targets(vertex).size()).sum();
+        return "GraphPoet with a word affinity graph containing " + vertexCount + " vertices and " + edgeCount + " edges.";
     }
 }
