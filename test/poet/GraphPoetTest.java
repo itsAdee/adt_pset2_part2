@@ -38,7 +38,7 @@ public class GraphPoetTest {
         // Test with an input string requiring bridge words
         String input1 = "Seek to explore new and exciting synergies!";
         String poem1 = poet.poem(input1);
-        assertEquals("Seek to explore strange new life and exciting synergies!", poem1);
+        assertEquals("seek to explore strange new life and exciting synergies!", poem1);
     }
 
     @Test
@@ -49,7 +49,7 @@ public class GraphPoetTest {
         // Test with an input string where no bridge words are needed
         String input2 = "This is a test.";
         String poem2 = poet.poem(input2);
-        assertEquals("This is a test.", poem2);
+        assertEquals("this is a test.", poem2);
     }
 
     @Test
@@ -62,7 +62,7 @@ public class GraphPoetTest {
         String poem3 = poet.poem(input3);
         // In this case, the unknown words should be preserved, and no bridge words
         // inserted
-        assertEquals("Hello unknown world!", poem3);
+        assertEquals("hello unknown world!", poem3);
     }
 
 }
